@@ -1,0 +1,8 @@
+E:\Raihan\C_sharp\CF_Viewer\CF_Viewer\obj\Debug\CF_Viewer.csprojResolveAssemblyReference.cache
+E:\Raihan\C_sharp\CF_Viewer\CF_Viewer\obj\Debug\CF_Viewer.MainForm.resources
+E:\Raihan\C_sharp\CF_Viewer\CF_Viewer\obj\Debug\CF_Viewer.csproj.GenerateResource.Cache
+E:\Raihan\C_sharp\CF_Viewer\CF_Viewer\bin\Debug\CF_Viewer.exe.config
+E:\Raihan\C_sharp\CF_Viewer\CF_Viewer\bin\Debug\CF_Viewer.exe
+E:\Raihan\C_sharp\CF_Viewer\CF_Viewer\bin\Debug\CF_Viewer.pdb
+E:\Raihan\C_sharp\CF_Viewer\CF_Viewer\obj\Debug\CF_Viewer.exe
+E:\Raihan\C_sharp\CF_Viewer\CF_Viewer\obj\Debug\CF_Viewer.pdb
