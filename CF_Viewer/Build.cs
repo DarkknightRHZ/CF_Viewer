@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Created by SharpDevelop.
  * User: PC
  * Date: 2/14/2017
@@ -15,6 +15,9 @@ using CF_Viewer;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace CF_Viewer
 {
@@ -80,68 +83,9 @@ namespace CF_Viewer
 			RetStream = RetUrl.GetResponse().GetResponseStream();
 			RetReader = new StreamReader(RetStream);
 			RetString = RetReader.ReadLine();
-			tmp = 0;
-			for (int i = RetString.Length - 7; i <= RetString.Length - 4; i++)
-			{
-				if (RetString[i] < '0' || RetString[i] > '9') break;
-				tmp *= 10;
-				tmp += (RetString[i] - '0');
-			}
-			s1 = "";
-			s2 = "";
-			if (tmp < 1200) 
-			{
-				s1 = "d3d1c2";
-				s2 = "Newbie";
-			}
-			else if (tmp >= 1200 && tmp < 1400)
-			{
-				s1 = "008000";
-				s2 = "Pupil";
-			}
-			else if (tmp >= 1400 && tmp < 1600)
-			{
-				s1 = "00cccc";
-				s2 = "Specialist";
-			}
-			else if (tmp >= 1600 && tmp < 1900)
-			{
-				s1 = "0000FF";
-				s2 = "Expert";
-			}
-			else if (tmp >= 1900 && tmp < 2200)
-			{
-				s1 = "ff33cc";
-				s2 = "Candidate Master";
-			}
-			else if (tmp >= 2200 && tmp < 2400)
-			{
-				s1 = "FFA500";
-				s2 = "Master";
-			}
-			else if (tmp >= 2400 && tmp < 2700)
-			{
-				s1 = "FF0000";
-				s2 = "International Master";
-			}
-			else if (tmp >= 2700 && tmp < 2900)
-			{
-				s1 = "FF0000";
-				s2 = "Grand Master";
-			}
-			else if (tmp >= 2900 && tmp <= 3100)
-			{
-				s1 = "FF0000";
-				s2 = "International Grand Master";
-			}
-			else
-			{
-				s1 = "FF0000";
-				s2 = "Legendary Grand Master";
-			}
-			User.Color = s1;
-			User.Status = s2;
-			User.Rating = tmp;
+			JsonUserRatings json = JsonConvert.DeserializeObject <JsonUserRatings> (RetString);
+			//User.Color = s1;
+			User.Rating = json.result[json.result.Count - 1].newRating;
 		}
 		private void ProcessStatus(string ID)
 		{
@@ -151,69 +95,40 @@ namespace CF_Viewer
 			RetStream = RetUrl.GetResponse().GetResponseStream();
 			RetReader = new StreamReader(RetStream);
 			RetString = RetReader.ReadLine();
-			//Console.WriteLine("{0}",RetString.Length);
-			int i,j;
-			for (i = 0; i < RetString.Length - 25; i++)
+			JsonUserStatus json = JsonConvert.DeserializeObject <JsonUserStatus> (RetString);
+			for (int i = 0; i < json.result.Count; i++)
 			{
-				s1 = "";
-				for (j = i; j < i + 2; j++) s1 += RetString[j];
-				if (s1 == "id")
-				{
-					Sub++;
-					i = j - 1;
-					continue;
-				}
-				for (; j < i + 6; j++) s1 += RetString[j];
-				if (s1 == "t\":\"OK")
+				s1 = json.result[i].verdict;
+				if (s1 == "OK")
 				{
 					AC++;
-					i = j - 1;
-					continue;
 				}
-				for (; j < i + 7; j++) s1 += RetString[j];
 				if (s1 == "SKIPPED")
 				{
 					Skpd++;
-					i = j - 1;
-					continue;
 				}
-				for (; j < i + 12; j++) s1 += RetString[j];
 				if (s1 == "WRONG_ANSWER")
 				{
 					WA++;
-					i = j - 1;
-					continue;
 				}
-				for (; j < i + 13; j++) s1 += RetString[j];
 				if (s1 == "RUNTIME_ERROR")
 				{
 					RE++;
-					i = j - 1;
-					continue;
 				}
-				for (; j < i + 17; j++) s1 += RetString[j];
 				if (s1 == "COMPILATION_ERROR")
 				{
 					CE++;
-					i = j - 1;
-					continue;
 				}
-				for (; j < i + 19; j++) s1 += RetString[j];
 				if (s1 == "TIME_LIMIT_EXCEEDED")
 				{
 					TLE++;
-					i = j - 1;
-					continue;
 				}
-				for (; j < i + 21; j++) s1 += RetString[j];
 				if (s1 == "MEMORY_LIMIT_EXCEEDED")
 				{
 					MLE++;
-					i = j - 1;
-					continue;
 				}
 			}
-			User.Sub = Sub;
+			User.Sub = json.result.Count;
 			User.AC = AC;
 			User.WA = WA;
 			User.TLE = TLE;
@@ -224,104 +139,21 @@ namespace CF_Viewer
 		}
 		private void ProcessInfo(string ID)
 		{
-			string FirstName, LastName, Institute, City, Country, ProPicPath, Contribution, MaxRank, s;
-			FirstName = LastName = Institute = City = Country = Contribution = ProPicPath = MaxRank = "";
-			int i,j,k;
 			ReqUrl = "http://codeforces.com/api/user.info?handles=";
 			RetUrl = WebRequest.Create(ReqUrl + ID);
 			RetStream = RetUrl.GetResponse().GetResponseStream();
 			RetReader = new StreamReader(RetStream);
 			RetString = RetReader.ReadLine();
-			for (i = 0; i < RetString.Length; i++)
-			{
-				s = "";
-				for (j = i; j < i + 4 && j < RetString.Length; j++) s += RetString[j];
-				if (s == "city")
-				{
-					for (k = j + 3; k < RetString.Length && RetString[k] != '"'; k++)
-					{
-						City += RetString[k];
-					}
-					i = j - 1;
-					continue;
-				}
-				for (; j < i + 7 && j < RetString.Length; j++) s += RetString[j];
-				if (s == "country")
-				{
-					for (k = j + 3; k < RetString.Length && RetString[k] != '"'; k++)
-					{
-						Country += RetString[k];
-					}
-					i = j - 1;
-					continue;
-				}
-				if (s == "maxRank")
-				{
-					for (k = j + 3; k < RetString.Length && RetString[k] != '"'; k++)
-					{
-						MaxRank += RetString[k];
-					}
-					i = j - 1;
-					continue;
-				}
-				for (; j < i + 8 && j < RetString.Length; j++) s += RetString[j];
-				if (s == "lastName")
-				{
-					for (k = j + 3; k < RetString.Length && RetString[k] != '"'; k++)
-					{
-						LastName += RetString[k];
-					}
-					i = j - 1;
-					continue;
-				}
-				for (; j < i + 9 && j < RetString.Length; j++) s += RetString[j];
-				if (s == "firstName")
-				{
-					for (k = j + 3; k < RetString.Length && RetString[k] != '"'; k++)
-					{
-						FirstName += RetString[k];
-					}
-					i = j - 1;
-					continue;
-				}
-				for (; j < i + 10 && j < RetString.Length; j++) s += RetString[j];
-				if (s == "titlePhoto")
-				{
-					for (k = j + 3; k < RetString.Length && RetString[k] != '"'; k++)
-					{
-						ProPicPath += RetString[k];
-					}
-					i = j - 1;
-					continue;
-				}
-				for (; j < i + 12 && j < RetString.Length; j++) s += RetString[j];
-				if (s == "organization")
-				{
-					for (k = j + 3; k < RetString.Length && RetString[k] != '"'; k++)
-					{
-						Institute += RetString[k];
-					}
-					i = j - 1;
-					continue;
-				}
-				if (s == "contribution")
-				{
-					for (k = j + 2; k < RetString.Length && RetString[k] != ','; k++)
-					{
-						Contribution += RetString[k];
-					}
-					i = j - 1;
-					continue;
-				}
-			}
-			if (ProPicPath == "") ProPicPath = DefaultImagePath;
-			User.Name = FirstName + " " + LastName;
-			User.Institute = Institute;
-			User.City = City;
-			User.Country = Country;
-			User.MaxRank = MaxRank;
-			User.Contribution = Contribution;
-			User.ProPicPath = ProPicPath;
+			JsonUserInfo json = JsonConvert.DeserializeObject <JsonUserInfo> (RetString);
+			User.Name = json.result[0].firstName + " " + json.result[0].lastName;
+			User.Institute = json.result[0].organization;
+			User.City = json.result[0].city;
+			User.Status = json.result[0].rank;
+			User.Country = json.result[0].country;
+			User.MaxRank = json.result[0].maxRank;
+			User.Contribution = json.result[0].contribution;
+			User.ProPicPath = json.result[0].titlePhoto;
+			if (User.ProPicPath == "") User.ProPicPath = DefaultImagePath;
 		}
 	}
 }
